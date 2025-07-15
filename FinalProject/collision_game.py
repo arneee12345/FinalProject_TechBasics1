@@ -373,7 +373,8 @@ while True:
                 activate_powerup(p.kind, now)
                 powerups.remove(p)
 
-        score += 1
+        if pygame.time.get_ticks() % 200 < 17:  # roughly every 200ms
+            score += 1
         if score % 200 == 0 and spawn_rate > 30:
             difficulty += 1
             spawn_rate -= 5
