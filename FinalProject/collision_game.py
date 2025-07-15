@@ -35,6 +35,16 @@ car_options = [
     {"name": "Blue Lightning McQueen", "image": pygame.transform.scale(pygame.image.load("lightningblue.png"), (100, 60))}
 ]
 
+power_shield_img = pygame.transform.scale(pygame.image.load("power_shield.png"), (40, 40))
+power_slow_img = pygame.transform.scale(pygame.image.load("power_slow.png"), (40, 40))
+power_magnet_img = pygame.transform.scale(pygame.image.load("power_magnet.png"), (40, 40))
+power_double_img = pygame.transform.scale(pygame.image.load("power_double.png"), (40, 40))
+
+coin_img = pygame.transform.scale(pygame.image.load("coin.png"), (40, 40))
+
+pickup_message = ""
+pickup_timer = 0  # milliseconds
+
 obstacle_img = pygame.transform.scale(pygame.image.load("cone.png"), (50, 60))
 frank_img = pygame.transform.scale(pygame.image.load("frank.png"), (80, 60))
 
@@ -50,6 +60,8 @@ crash_sound = load_sound("crash.mp3")
 frank_sound = load_sound("frank_sound.mp3")
 pause_ding = load_sound("pause_ding.mp3")
 select_sound = load_sound("select.mp3")
+coin_pickup_sound = load_sound("coin_pickup.mp3")
+powerup_pickup_sound = load_sound("powerup_pickup.mp3")
 
 # === Fonts & Screen ===
 font = pygame.font.SysFont(None, 36)
@@ -193,9 +205,67 @@ class Frank:
     def draw(self):
         screen.blit(self.image, (self.rect.x, self.rect.y + self.shake_offset))
 
+# === PowerUps and Coins ===
+POWER_UP_TYPES = {
+    "shield": {"image": "power_shield.png", "duration": 8},
+    "slow": {"image": "power_slow.png", "duration": 5},
+    "magnet": {"image": "power_magnet.png", "duration": 6},
+    }
+
+class PowerUp:
+    def __init__(self, kind):
+        self.kind = kind
+        self.image = pygame.transform.scale(pygame.image.load(POWER_UP_TYPES[kind]["image"]), (40, 40))
+        self.rect = self.image.get_rect()
+        self.rect.x = random.randint(WIDTH + 50, WIDTH + 300)
+        self.rect.y = random.randint(50, HEIGHT - 50)
+        self.speed = 3
+
+    def move(self):
+        self.rect.x -= self.speed
+
+    def draw(self, screen):
+        screen.blit(self.image, self.rect)
+
+class Coin:
+    def __init__(self):
+        self.image = pygame.transform.scale(pygame.image.load("coin.png"), (30, 30))
+        self.rect = self.image.get_rect()
+        self.rect.x = random.randint(WIDTH + 50, WIDTH + 400)
+        self.rect.y = random.randint(50, HEIGHT - 50)
+        self.speed = 4
+
+    def move(self):
+        self.rect.x -= self.speed
+
+    def draw(self, screen):
+        screen.blit(self.image, self.rect)
+
 # === Game Logic ===
 def reset_game(player_img):
     return Car(player_img), [Obstacle(5)], Frank(), 0, 5, 100
+
+False, False
+
+# === Game Logic ===
+def reset_game(player_img):
+    return Car(player_img), [Obstacle(5)], Frank(), 0, 5, 100
+
+coins = []
+powerups = []
+active_effects = {}  # {'shield': end_time, 'speed': end_time, ...}
+
+def activate_powerup(kind, now):
+    global pickup_message, pickup_timer
+
+    duration = POWER_UP_TYPES[kind]["duration"]
+    if duration > 0:
+        active_effects[kind] = now + duration * 1000
+        pickup_message = f"{kind.upper()} Activated!"
+        pickup_timer = now + 2000
+
+    if powerup_pickup_sound:
+        powerup_pickup_sound.play()
 
 # === Game Start ===
 player_img = show_menu_and_car_select()
@@ -209,6 +279,11 @@ while True:
     screen.fill(BG_COLOR)
     keys = pygame.key.get_pressed()
 
+    now = pygame.time.get_ticks()
+    expired = [k for k in active_effects if now > active_effects[k]]
+    for k in expired:
+        del active_effects[k]
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             sys.exit()
@@ -219,6 +294,9 @@ while True:
                 play_music("pause" if paused else "game")
         if game_over and event.type == pygame.KEYDOWN and event.key == pygame.K_r:
             player, obstacles, frank, score, difficulty, spawn_rate = reset_game(player_img)
+            coins.clear()
+            powerups.clear()
+            active_effects.clear()
             game_over = False
             last_game_over = False
             play_music("game")
@@ -229,15 +307,17 @@ while True:
         frank.update()
         frank.draw()
 
-        if player.rect.left <= frank.rect.right:
+        slow_factor = 0.5 if 'slow' in active_effects else 1.0
+
+        if player.rect.left <= frank.rect.right and 'invisible' not in active_effects:
             if crash_sound: crash_sound.play()
             play_music("gameover")
             game_over = True
 
         for o in obstacles:
-            o.move()
+            o.rect.x -= int(o.speed * slow_factor)
             o.draw()
-            if player.rect.colliderect(o.rect):
+            if player.rect.colliderect(o.rect) and 'shield' not in active_effects:
                 if crash_sound: crash_sound.play()
                 play_music("gameover")
                 game_over = True
@@ -245,6 +325,53 @@ while True:
         obstacles = [o for o in obstacles if o.rect.right > frank.rect.right]
         if random.randint(0, spawn_rate) < 2:
             obstacles.append(Obstacle(difficulty))
+
+        # 🔁 Spawn coins and powerups
+        if random.randint(0, 500) < 2:
+            coins.append(Coin())
+        if random.randint(0, 800) < 2:
+            kind = random.choice(list(POWER_UP_TYPES.keys()))
+            powerups.append(PowerUp(kind))
+
+        # 💥 Handle coins
+        for coin in coins[:]:
+            coin.move()
+            coin.draw(screen)
+            # 🧲 Magnet effect: attract nearby coins/powerups
+            if 'magnet' in active_effects:
+                magnet_radius = 150
+                magnet_speed = 3
+
+                for coin in coins:
+                    dx = player.rect.centerx - coin.rect.centerx
+                    dy = player.rect.centery - coin.rect.centery
+                    distance = math.hypot(dx, dy)
+                    if distance < magnet_radius:
+                        angle = math.atan2(dy, dx)
+                        coin.rect.x += int(magnet_speed * math.cos(angle))
+                        coin.rect.y += int(magnet_speed * math.sin(angle))
+
+                for p in powerups:
+                    dx = player.rect.centerx - p.rect.centerx
+                    dy = player.rect.centery - p.rect.centery
+                    distance = math.hypot(dx, dy)
+                    if distance < magnet_radius:
+                        angle = math.atan2(dy, dx)
+                        p.rect.x += int(magnet_speed * math.cos(angle))
+                        p.rect.y += int(magnet_speed * math.sin(angle))
+            if player.rect.colliderect(coin.rect):
+                coins.remove(coin)
+                score += 10
+                if coin_pickup_sound:
+                    coin_pickup_sound.play()
+
+        # ✨ Handle powerups
+        for p in powerups[:]:
+            p.move()
+            p.draw(screen)
+            if player.rect.colliderect(p.rect):
+                activate_powerup(p.kind, now)
+                powerups.remove(p)
 
         score += 1
         if score % 200 == 0 and spawn_rate > 30:
@@ -276,12 +403,18 @@ while True:
                         play_music("game")
                     elif selected == "Restart":
                         player, obstacles, frank, score, difficulty, spawn_rate = reset_game(player_img)
+                        coins.clear()
+                        powerups.clear()
+                        active_effects.clear()
                         paused = False
                         game_over = False
                         play_music("game")
                     elif selected == "Main Menu":
                         player_img = show_menu_and_car_select()
                         player, obstacles, frank, score, difficulty, spawn_rate = reset_game(player_img)
+                        coins.clear()
+                        powerups.clear()
+                        active_effects.clear()
                         paused = False
                         game_over = False
                         play_music("menu")
@@ -297,10 +430,10 @@ while True:
         msg = font.render("💥 Game Over! Press R to restart", True, WHITE)
         screen.blit(msg, (WIDTH // 2 - msg.get_width() // 2, HEIGHT // 2))
 
+    # Show all active effects as messages
+    for i, effect in enumerate(active_effects):
+        msg = font.render(f"{effect.upper()} ACTIVE", True, YELLOW)
+        screen.blit(msg, (WIDTH // 2 - msg.get_width() // 2, HEIGHT - 50 - i * 30))
+
     pygame.display.flip()
-
-
-
-
-
 
