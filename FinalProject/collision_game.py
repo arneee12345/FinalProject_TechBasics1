@@ -103,6 +103,10 @@ def draw_pause_menu():
         text = font.render(option, True, color)
         screen.blit(text, (WIDTH // 2 - text.get_width() // 2, HEIGHT // 2 - 40 + i * 40))
 
+    score_text = small_font.render(f"Score: {score}", True, YELLOW)
+    screen.blit(score_text, (WIDTH // 2 - score_text.get_width() // 2, HEIGHT // 2 + 140))
+
+
 # === Car Selection & Menu ===
 def show_menu_and_car_select():
     play_music("menu")
