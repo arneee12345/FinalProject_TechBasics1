@@ -28,11 +28,14 @@ MUSIC_TRACKS = {
 
 # === Load Assets ===
 car_options = [
-    {"name": "McQueen", "image": pygame.transform.scale(pygame.image.load("cachow.png"), (100, 60))},
+    {"name": "McQueen", "image": pygame.transform.scale(pygame.image.load("mcqueen.png"), (100, 60))},
     {"name": "Sally", "image": pygame.transform.scale(pygame.image.load("sally.png"), (100, 60))},
     {"name": "Doc Hudson", "image": pygame.transform.scale(pygame.image.load("doc.png"), (100, 60))},
     {"name": "Tow Mater", "image": pygame.transform.scale(pygame.image.load("mater.png"), (100, 60))},
-    {"name": "Blue Lightning McQueen", "image": pygame.transform.scale(pygame.image.load("lightningblue.png"), (100, 60))}
+    {"name": "Yellow Car", "image": pygame.transform.scale(pygame.image.load("yellowcar.png"), (100, 60))},
+    {"name": "Hippie Bus", "image": pygame.transform.scale(pygame.image.load("hippie.png"), (100, 60))},
+    {"name": "Guido", "image": pygame.transform.scale(pygame.image.load("guido.png"), (100, 60))},
+    {"name": "Pink Car", "image": pygame.transform.scale(pygame.image.load("pinkcar.png"), (100, 60))},
 ]
 
 power_shield_img = pygame.transform.scale(pygame.image.load("power_shield.png"), (40, 40))
