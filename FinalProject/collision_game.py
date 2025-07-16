@@ -67,8 +67,8 @@ coin_pickup_sound = load_sound("coin_pickup.mp3")
 powerup_pickup_sound = load_sound("powerup_pickup.mp3")
 
 # === Fonts & Screen ===
-font = pygame.font.SysFont(None, 36)
-small_font = pygame.font.SysFont(None, 24)
+font = pygame.font.Font("pixelfont.otf", 36)
+small_font = pygame.font.Font("pixelfont.otf", 24)
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Lightning McQueen Dodge – Cone Chaos")
 clock = pygame.time.Clock()
@@ -93,7 +93,7 @@ def draw_pause_menu():
     overlay.fill(OVERLAY_COLOR)
     screen.blit(overlay, (0, 0))
 
-    title = font.render("⏸ Game Paused", True, WHITE)
+    title = font.render("Game Paused", True, WHITE)
     screen.blit(title, (WIDTH // 2 - title.get_width() // 2, HEIGHT // 2 - 100))
 
     for i, option in enumerate(pause_options):
@@ -106,7 +106,7 @@ def show_menu_and_car_select():
     play_music("menu")
     while True:
         screen.fill(BG_COLOR)
-        title = font.render("🚗 Lightning McQueen – Cone Chaos", True, WHITE)
+        title = font.render("Cars – Cone Chaos", True, WHITE)
         instructions = small_font.render("Press SPACE to start | ESC to quit", True, WHITE)
 
         screen.blit(title, (WIDTH // 2 - title.get_width() // 2, HEIGHT // 2 - 60))
@@ -132,7 +132,7 @@ def show_menu_and_car_select():
         screen.fill(BG_COLOR)
         car = car_options[selected]
         label = font.render(f"Choose your car: {car['name']}", True, WHITE)
-        info = small_font.render("← / → to change car, ENTER to start", True, WHITE)
+        info = small_font.render("<- / -> to change car, ENTER to start", True, WHITE)
 
         screen.blit(label, (WIDTH // 2 - label.get_width() // 2, HEIGHT // 2 - 100))
         screen.blit(car["image"], (WIDTH // 2 - car["image"].get_width() // 2, HEIGHT // 2 - 20))
@@ -431,7 +431,7 @@ while True:
             play_music("gameover")
             last_game_over = True
 
-        msg = font.render("💥 Game Over! Press R to restart", True, WHITE)
+        msg = font.render("Game Over! Press R to restart", True, WHITE)
         screen.blit(msg, (WIDTH // 2 - msg.get_width() // 2, HEIGHT // 2))
 
     # Show all active effects as messages
