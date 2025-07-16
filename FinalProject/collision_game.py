@@ -18,6 +18,8 @@ OVERLAY_COLOR = (0, 0, 0, 180)
 
 music_volume = 0.15
 sfx_volume = 0.1
+flash_time = None
+
 
 MUSIC_TRACKS = {
     "game": "bg_game.mp3",
@@ -74,15 +76,15 @@ pygame.display.set_caption("Lightning McQueen Dodge – Cone Chaos")
 clock = pygame.time.Clock()
 
 # === Music Playback ===
-def play_music(track_key, fade_ms=1000):
+def play_music(track_key, fade_ms=0):
     try:
-        pygame.mixer.music.fadeout(fade_ms)
-        pygame.time.delay(fade_ms)
+        pygame.mixer.music.stop()
         pygame.mixer.music.load(MUSIC_TRACKS[track_key])
         pygame.mixer.music.set_volume(music_volume)
-        pygame.mixer.music.play(-1, fade_ms=fade_ms)
+        pygame.mixer.music.play(-1)
     except (pygame.error, KeyError):
         print(f"⚠️ Couldn't play music for '{track_key}'")
+
 
 # === Pause Menu ===
 pause_options = ["Resume", "Restart", "Main Menu", "Quit"]
@@ -324,23 +326,24 @@ while True:
                 if crash_sound: crash_sound.play()
                 play_music("gameover")
                 game_over = True
+                flash_time = pygame.time.get_ticks()
 
         obstacles = [o for o in obstacles if o.rect.right > frank.rect.right]
         if random.randint(0, spawn_rate) < 2:
             obstacles.append(Obstacle(difficulty))
 
-        # 🔁 Spawn coins and powerups
+        # Spawn coins and powerups
         if random.randint(0, 500) < 2:
             coins.append(Coin())
         if random.randint(0, 800) < 2:
             kind = random.choice(list(POWER_UP_TYPES.keys()))
             powerups.append(PowerUp(kind))
 
-        # 💥 Handle coins
+        # Handle coins
         for coin in coins[:]:
             coin.move()
             coin.draw(screen)
-            # 🧲 Magnet effect: attract nearby coins/powerups
+            # Magnet effect: attract nearby coins/powerups
             if 'magnet' in active_effects:
                 magnet_radius = 150
                 magnet_speed = 3
@@ -368,7 +371,7 @@ while True:
                 if coin_pickup_sound:
                     coin_pickup_sound.play()
 
-        # ✨ Handle powerups
+        # Handle powerups
         for p in powerups[:]:
             p.move()
             p.draw(screen)
@@ -432,12 +435,20 @@ while True:
             last_game_over = True
 
         msg = font.render("Game Over! Press R to restart", True, WHITE)
+        score_msg = small_font.render(f"Final Score: {score}", True, YELLOW)
+        screen.blit(score_msg, (WIDTH // 2 - score_msg.get_width() // 2, HEIGHT // 2 + 40))
         screen.blit(msg, (WIDTH // 2 - msg.get_width() // 2, HEIGHT // 2))
 
     # Show all active effects as messages
     for i, effect in enumerate(active_effects):
         msg = font.render(f"{effect.upper()} ACTIVE", True, YELLOW)
         screen.blit(msg, (WIDTH // 2 - msg.get_width() // 2, HEIGHT - 50 - i * 30))
+
+    if flash_time and pygame.time.get_ticks() - flash_time < 200:
+        flash_overlay = pygame.Surface((WIDTH, HEIGHT))
+        flash_overlay.fill((255, 0, 0))
+        flash_overlay.set_alpha(80)
+        screen.blit(flash_overlay, (0, 0))
 
     pygame.display.flip()
 
