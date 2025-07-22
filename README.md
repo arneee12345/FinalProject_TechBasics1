@@ -1,3 +1,17 @@
-My Final Project for the university class "Tech Basics 1" 
+# 🏁 Lightning McQueen Dodge – Cone Chaos
 
-It will be a game related to the scene from the tractor tipping scene in the Cars movie. In the scene Lightning McQueen and Mater honk at sleeping tractor to make them fell over but suddenly they get chased by the giant harvester.
+A fast-paced 2D dodge game built with **Pygame**, where you race as Lightning McQueen (or friends!) and dodge falling cones, outmaneuver the mighty Frank, and collect coins and power-ups to maximize your score.
+
+---
+
+## 🎮 Gameplay Overview
+
+- 🚗 Choose from iconic *Cars* characters like McQueen, Mater, Sally, Guido, and more
+- 💰 Collect coins to increase your score
+- 🛡️ Pick up power-ups like:
+  - Shield: Block hits for a set period of time
+  - Slow Motion: Temporarily slow down obstacles
+  - Magnet: Attract nearby coins and power-ups
+- 💥 Avoid crashing into cones or Frank, or it's game over!
+
+
