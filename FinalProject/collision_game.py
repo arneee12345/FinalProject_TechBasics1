@@ -11,6 +11,8 @@ pygame.mixer.init()
 WIDTH, HEIGHT = 1000, 600
 FPS = 60
 
+bg_scroll = 0
+
 WHITE = (255, 255, 255)
 YELLOW = (255, 255, 0)
 BG_COLOR = (30, 30, 30)
@@ -22,36 +24,38 @@ flash_time = None
 
 
 MUSIC_TRACKS = {
-    "game": "bg_game.mp3",
-    "menu": "bg_pause.mp3",     # Shared by menu, pause, and game over
-    "pause": "bg_pause.mp3",
-    "gameover": "bg_pause.mp3"
+    "game": "assets/sounds/bg_game.mp3",
+    "menu": "assets/sounds/bg_pause.mp3",     # Shared by menu, pause, and game over
+    "pause": "assets/sounds/bg_pause.mp3",
+    "gameover": "assets/sounds/bg_pause.mp3"
 }
 
 # === Load Assets ===
 car_options = [
-    {"name": "McQueen", "image": pygame.transform.scale(pygame.image.load("mcqueen.png"), (100, 60))},
-    {"name": "Sally", "image": pygame.transform.scale(pygame.image.load("sally.png"), (100, 60))},
-    {"name": "Doc Hudson", "image": pygame.transform.scale(pygame.image.load("doc.png"), (100, 60))},
-    {"name": "Tow Mater", "image": pygame.transform.scale(pygame.image.load("mater.png"), (100, 60))},
-    {"name": "Yellow Car", "image": pygame.transform.scale(pygame.image.load("yellowcar.png"), (100, 60))},
-    {"name": "Hippie Bus", "image": pygame.transform.scale(pygame.image.load("hippie.png"), (100, 60))},
-    {"name": "Guido", "image": pygame.transform.scale(pygame.image.load("guido.png"), (100, 60))},
-    {"name": "Pink Car", "image": pygame.transform.scale(pygame.image.load("pinkcar.png"), (100, 60))},
+    {"name": "McQueen", "image": pygame.transform.scale(pygame.image.load("assets/images/mcqueen.png"), (100, 60))},
+    {"name": "Sally", "image": pygame.transform.scale(pygame.image.load("assets/images/sally.png"), (100, 60))},
+    {"name": "Doc Hudson", "image": pygame.transform.scale(pygame.image.load("assets/images/doc.png"), (100, 60))},
+    {"name": "Tow Mater", "image": pygame.transform.scale(pygame.image.load("assets/images/mater.png"), (100, 60))},
+    {"name": "Yellow Car", "image": pygame.transform.scale(pygame.image.load("assets/images/yellowcar.png"), (100, 60))},
+    {"name": "Hippie Bus", "image": pygame.transform.scale(pygame.image.load("assets/images/hippie.png"), (100, 60))},
+    {"name": "Guido", "image": pygame.transform.scale(pygame.image.load("assets/images/guido.png"), (100, 60))},
+    {"name": "Pink Car", "image": pygame.transform.scale(pygame.image.load("assets/images/pinkcar.png"), (100, 60))},
 ]
 
-power_shield_img = pygame.transform.scale(pygame.image.load("power_shield.png"), (40, 40))
-power_slow_img = pygame.transform.scale(pygame.image.load("power_slow.png"), (40, 40))
-power_magnet_img = pygame.transform.scale(pygame.image.load("power_magnet.png"), (40, 40))
-power_double_img = pygame.transform.scale(pygame.image.load("power_double.png"), (40, 40))
+power_shield_img = pygame.transform.scale(pygame.image.load("assets/images/power_shield.png"), (40, 40))
+power_slow_img = pygame.transform.scale(pygame.image.load("assets/images/power_slow.png"), (40, 40))
+power_magnet_img = pygame.transform.scale(pygame.image.load("assets/images/power_magnet.png"), (40, 40))
+power_double_img = pygame.transform.scale(pygame.image.load("assets/images/power_double.png"), (40, 40))
 
-coin_img = pygame.transform.scale(pygame.image.load("coin.png"), (40, 40))
+coin_img = pygame.transform.scale(pygame.image.load("assets/images/coin.png"), (40, 40))
 
 pickup_message = ""
 pickup_timer = 0  # milliseconds
 
-obstacle_img = pygame.transform.scale(pygame.image.load("cone.png"), (50, 60))
-frank_img = pygame.transform.scale(pygame.image.load("frank.png"), (80, 60))
+obstacle_img = pygame.transform.scale(pygame.image.load("assets/images/cone.png"), (50, 60))
+frank_img = pygame.transform.scale(pygame.image.load("assets/images/frank.png"), (80, 60))
+
+
 
 def load_sound(file):
     try:
@@ -61,19 +65,22 @@ def load_sound(file):
     except pygame.error:
         return None
 
-crash_sound = load_sound("crash.mp3")
-frank_sound = load_sound("frank_sound.mp3")
-pause_ding = load_sound("pause_ding.mp3")
-select_sound = load_sound("select.mp3")
-coin_pickup_sound = load_sound("coin_pickup.mp3")
-powerup_pickup_sound = load_sound("powerup_pickup.mp3")
+crash_sound = load_sound("assets/sounds/crash.mp3")
+frank_sound = load_sound("assets/sounds/frank_sound.mp3")
+pause_ding = load_sound("assets/sounds/pause_ding.mp3")
+select_sound = load_sound("assets/sounds/select.mp3")
+coin_pickup_sound = load_sound("assets/sounds/coin_pickup.mp3")
+powerup_pickup_sound = load_sound("assets/sounds/powerup_pickup.mp3")
 
 # === Fonts & Screen ===
-font = pygame.font.Font("pixelfont.otf", 36)
-small_font = pygame.font.Font("pixelfont.otf", 24)
+font = pygame.font.Font("assets/fonts/pixelfont.otf", 36)
+small_font = pygame.font.Font("assets/fonts/pixelfont.otf", 24)
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Lightning McQueen Dodge – Cone Chaos")
 clock = pygame.time.Clock()
+background_img = pygame.image.load("assets/images/ingamebackground.png").convert()
+background_img = pygame.transform.scale(background_img, (WIDTH, HEIGHT))
+
 
 # === Music Playback ===
 def play_music(track_key, fade_ms=0):
@@ -216,9 +223,9 @@ class Frank:
 
 # === PowerUps and Coins ===
 POWER_UP_TYPES = {
-    "shield": {"image": "power_shield.png", "duration": 8},
-    "slow": {"image": "power_slow.png", "duration": 5},
-    "magnet": {"image": "power_magnet.png", "duration": 6},
+    "shield": {"image": "assets/images/power_shield.png", "duration": 8},
+    "slow": {"image": "assets/images/power_slow.png", "duration": 5},
+    "magnet": {"image": "assets/images/power_magnet.png", "duration": 6},
     }
 
 class PowerUp:
@@ -238,7 +245,7 @@ class PowerUp:
 
 class Coin:
     def __init__(self):
-        self.image = pygame.transform.scale(pygame.image.load("coin.png"), (30, 30))
+        self.image = pygame.transform.scale(pygame.image.load("assets/images/coin.png"), (30, 30))
         self.rect = self.image.get_rect()
         self.rect.x = random.randint(WIDTH + 50, WIDTH + 400)
         self.rect.y = random.randint(50, HEIGHT - 50)
@@ -285,7 +292,9 @@ game_over, paused, last_game_over = False, False, False
 # === Game Loop ===
 while True:
     clock.tick(FPS)
-    screen.fill(BG_COLOR)
+    bg_scroll = (bg_scroll - 2) % WIDTH  # change speed if needed
+    screen.blit(background_img, (bg_scroll - WIDTH, 0))
+    screen.blit(background_img, (bg_scroll, 0))
     keys = pygame.key.get_pressed()
 
     now = pygame.time.get_ticks()
