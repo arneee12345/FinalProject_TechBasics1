@@ -1,6 +1,6 @@
 # 🏁 Lightning McQueen Dodge – Cone Chaos
 
-A fast-paced 2D dodge game built with **Pygame**, where you race as Lightning McQueen (or friends!) and dodge falling cones, outmaneuver the mighty Frank, and collect coins and power-ups to maximize your score.
+A fast-paced 2D dodge game built with **Pygame**, where you race as Lightning McQueen (or friends!) and dodge cones, escape the mighty Frank, and collect coins and power-ups to maximize your score.
 
 ---
 
