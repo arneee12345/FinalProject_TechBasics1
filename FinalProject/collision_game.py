@@ -36,10 +36,10 @@ car_options = [
     {"name": "Sally", "image": pygame.transform.scale(pygame.image.load("assets/images/sally.png"), (100, 60))},
     {"name": "Doc Hudson", "image": pygame.transform.scale(pygame.image.load("assets/images/doc.png"), (100, 60))},
     {"name": "Tow Mater", "image": pygame.transform.scale(pygame.image.load("assets/images/mater.png"), (100, 60))},
-    {"name": "Yellow Car", "image": pygame.transform.scale(pygame.image.load("assets/images/yellowcar.png"), (100, 60))},
     {"name": "Hippie Bus", "image": pygame.transform.scale(pygame.image.load("assets/images/hippie.png"), (100, 60))},
     {"name": "Guido", "image": pygame.transform.scale(pygame.image.load("assets/images/guido.png"), (100, 60))},
     {"name": "Pink Car", "image": pygame.transform.scale(pygame.image.load("assets/images/pinkcar.png"), (100, 60))},
+    {"name": "Yellow Car", "image": pygame.transform.scale(pygame.image.load("assets/images/yellowcar.png"), (100, 60))},
 ]
 
 power_shield_img = pygame.transform.scale(pygame.image.load("assets/images/power_shield.png"), (40, 40))
